@@ -1,8 +1,15 @@
 import mysql from "mysql2/promise";
 
-export const db = mysql.createPool({
-  host: "localhost",
-  user: "root", 
-  password: "N33dpab4NgR0oo0t20260501",
-  database: "credit_card_application",
-});
+let connection;
+export const connectToDatabase = async () => {
+  if (!connection) {
+    connection = await mysql.createPool({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
+    });
+  }
+  return connection;
+}
+
