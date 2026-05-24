@@ -1,5 +1,5 @@
 # Untitled Credit Card Application Form
-*A full-stack web application for banks to simulate online applications and various transactions*
+### *A full-stack web application for banks to simulate online applications and various transactions*
 
 ## About
 - This is a web application built in partial completion for **Information Management**

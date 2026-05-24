@@ -1,7 +1,7 @@
 import mysql from "mysql2/promise";
 
 let connection;
-export const connectToDatabase = async () => {
+export const db_connect = async () => {
   if (!connection) {
     connection = await mysql.createPool({
       host: process.env.DB_HOST,
