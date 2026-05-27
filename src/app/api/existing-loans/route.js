@@ -20,5 +20,5 @@ export async function POST(request) {
             monthly_amortization ? Number(monthly_amortization) : 0.00
         ];
 
-        return await insert_route(query, values, "Existing loan record inserted successfully");
+        return await insert_route(query, values, "Existing loan rerd inserted successfully");
 }
