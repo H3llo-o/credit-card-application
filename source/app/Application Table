@@ -1,0 +1,239 @@
+'use client';
+
+import { useState } from 'react';
+
+type Application = {
+  id: string;
+  dateApplied: string;
+  type: string;
+  clientId: string;
+  name: string;
+  contact: string;
+  status: 'Approved' | 'Pending' | 'On-Hold';
+};
+
+const initialData: Application[] = [
+  {
+    id: 'APP-2026-00000001',
+    dateApplied: 'April 12, 2026',
+    type: 'Credit',
+    clientId: 'CL-00000001',
+    name: 'Jaime L. Legaspi',
+    contact: '09123456789',
+    status: 'Approved',
+  },
+  {
+    id: 'APP-2026-00000002',
+    dateApplied: 'April 12, 2026',
+    type: 'Credit',
+    clientId: 'CL-00000002',
+    name: 'Carmina Lagoon',
+    contact: '09123456780',
+    status: 'Pending',
+  },
+  {
+    id: 'APP-2026-00000003',
+    dateApplied: 'April 12, 2026',
+    type: 'Credit',
+    clientId: 'CL-00000003',
+    name: 'Simon Villa',
+    contact: '09123456781',
+    status: 'On-Hold',
+  },
+];
+
+const statusColors = {
+  Approved: 'bg-green-100 text-green-700',
+  Pending: 'bg-yellow-100 text-yellow-700',
+  'On-Hold': 'bg-orange-100 text-orange-700',
+};
+
+export default function ApplicationsPage() {
+  const [applications, setApplications] = useState<Application[]>(initialData);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [appToDelete, setAppToDelete] = useState<Application | null>(null);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === applications.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(applications.map((app) => app.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleDeleteClick = (app: Application) => {
+    setAppToDelete(app);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedIds.size === 0) return;
+    setAppToDelete(null);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (appToDelete) {
+      setApplications(applications.filter((app) => app.id !== appToDelete.id));
+      selectedIds.delete(appToDelete.id);
+    } else {
+      setApplications(applications.filter((app) => !selectedIds.has(app.id)));
+      setSelectedIds(new Set());
+    }
+    setShowDeleteModal(false);
+    setAppToDelete(null);
+  };
+
+  const handleSave = () => {
+    console.log('Saving applications:', applications);
+    alert('Changes saved successfully!');
+    // TODO: Connect to API
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 gap-4 mb-6 w-64">
+        <div className="bg-white rounded-lg shadow-sm p-4 text-center border">
+          <p className="text-2xl font-bold text-gray-900">{applications.length}</p>
+          <p className="text-xs text-gray-500">Total</p>
+        </div>
+        <div className="bg-white rounded-lg shadow-sm p-4 text-center border">
+          <p className="text-2xl font-bold text-yellow-600">
+            {applications.filter((a) => a.status === 'Pending').length}
+          </p>
+          <p className="text-xs text-gray-500">Pending</p>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-3 mb-6">
+        <button
+          onClick={handleDeleteSelected}
+          disabled={selectedIds.size === 0}
+          className={`px-4 py-2 rounded-lg font-medium transition ${
+            selectedIds.size === 0
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-red-600 text-white hover:bg-red-700'
+          }`}
+        >
+          Delete {selectedIds.size > 0 && `(${selectedIds.size})`}
+        </button>
+        <button
+          onClick={handleSave}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+        >
+          Save
+        </button>
+      </div>
+
+      {/* Applications Table */}
+      <div className="bg-white rounded-lg shadow-sm border overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 w-10">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.size === applications.length && applications.length > 0}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                />
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Application ID</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date Applied</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client ID</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {applications.map((app) => (
+              <tr key={app.id} className="hover:bg-gray-50 transition">
+                <td className="px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(app.id)}
+                    onChange={() => toggleSelect(app.id)}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                  />
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-900">{app.id}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{app.dateApplied}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{app.type}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-600">{app.clientId}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{app.name}</td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">{app.contact}</td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <span className={`px-2 py-1 text-xs rounded-full ${statusColors[app.status]}`}>
+                    {app.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <button
+                    onClick={() => handleDeleteClick(app)}
+                    className="text-red-600 hover:text-red-800 text-sm font-medium transition"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {applications.length === 0 && (
+          <div className="p-12 text-center">
+            <p className="text-gray-500">No applications found.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Are you sure you want to delete?
+              </h3>
+              <p className="text-gray-600 text-sm">
+                {appToDelete
+                  ? `This will permanently delete application ${appToDelete.id}.`
+                  : `This will permanently delete ${selectedIds.size} selected application(s).`}
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 px-6 pb-6">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
