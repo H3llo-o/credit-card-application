@@ -1,0 +1,444 @@
+'use client';
+
+import { useState } from 'react';
+
+type FormData = {
+  // Step 1
+  fullName: string;
+  dateOfBirth: string;
+  currentAddress: string;
+  mobileNumber: string;
+  email: string;
+  // Step 2
+  employmentStatus: string;
+  companyName: string;
+  position: string;
+  lengthOfService: string;
+  monthlyIncome: string;
+  // Step 3
+  hasLandbankAccount: boolean | null;
+  hasOtherBankLoan: boolean | null;
+  hasDebt: boolean | null;
+  // Step 4
+  references: { name: string; phone: string; relationship: string }[];
+  agreeToTerms: boolean;
+};
+
+export default function CreditCardApplicationPage() {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState<FormData>({
+    fullName: '',
+    dateOfBirth: '',
+    currentAddress: '',
+    mobileNumber: '',
+    email: '',
+    employmentStatus: 'Employed',
+    companyName: '',
+    position: '',
+    lengthOfService: '',
+    monthlyIncome: '',
+    hasLandbankAccount: null,
+    hasOtherBankLoan: null,
+    hasDebt: null,
+    references: [],
+    agreeToTerms: false,
+  });
+
+  const [newReference, setNewReference] = useState({ name: '', phone: '', relationship: '' });
+
+  const updateForm = (field: keyof FormData, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const addReference = () => {
+    if (newReference.name && newReference.phone) {
+      updateForm('references', [...formData.references, newReference]);
+      setNewReference({ name: '', phone: '', relationship: '' });
+    }
+  };
+
+  const removeReference = (index: number) => {
+    const updated = formData.references.filter((_, i) => i !== index);
+    updateForm('references', updated);
+  };
+
+  const nextStep = () => setStep(step + 1);
+  const prevStep = () => setStep(step - 1);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.agreeToTerms) {
+      alert('Please accept the Terms and Conditions');
+      return;
+    }
+    console.log('Application submitted:', formData);
+    alert('Application submitted successfully!');
+    // TODO: Connect to API
+  };
+
+  const isStepValid = () => {
+    switch (step) {
+      case 1:
+        return formData.fullName && formData.dateOfBirth && formData.currentAddress && formData.mobileNumber && formData.email;
+      case 2:
+        return formData.companyName && formData.position && formData.lengthOfService && formData.monthlyIncome;
+      case 3:
+        return true;
+      case 4:
+        return true;
+      default:
+        return false;
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900">Online Application: Credit Card</h1>
+        
+        {/* Step Progress */}
+        <div className="mt-6 flex gap-2 md:gap-4">
+          {['Contact Info', 'Employee Info', 'Accounts & Loans', 'Reference'].map((label, idx) => (
+            <div key={idx} className="flex-1 text-center">
+              <div
+                className={`h-2 rounded-full transition ${
+                  step > idx + 1
+                    ? 'bg-green-500'
+                    : step === idx + 1
+                    ? 'bg-blue-600'
+                    : 'bg-gray-200'
+                }`}
+              />
+              <p
+                className={`text-xs mt-2 font-medium ${
+                  step === idx + 1 ? 'text-blue-600' : step > idx + 1 ? 'text-green-600' : 'text-gray-400'
+                }`}
+              >
+                {label}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border p-6">
+        {/* Step 1 */}
+        {step === 1 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact Info</h2>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+              <input
+                type="text"
+                value={formData.fullName}
+                onChange={(e) => updateForm('fullName', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth *</label>
+              <input
+                type="date"
+                value={formData.dateOfBirth}
+                onChange={(e) => updateForm('dateOfBirth', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Current Address *</label>
+              <textarea
+                value={formData.currentAddress}
+                onChange={(e) => updateForm('currentAddress', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                rows={2}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number *</label>
+              <input
+                type="tel"
+                value={formData.mobileNumber}
+                onChange={(e) => updateForm('mobileNumber', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => updateForm('email', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Step 2 */}
+        {step === 2 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Employment Info</h2>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Employment Status</label>
+              <select
+                value={formData.employmentStatus}
+                onChange={(e) => updateForm('employmentStatus', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option>Employed</option>
+                <option>Self-Employed</option>
+                <option>Unemployed</option>
+                <option>Retired</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+              <input
+                type="text"
+                value={formData.companyName}
+                onChange={(e) => updateForm('companyName', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Position/Job Title *</label>
+              <input
+                type="text"
+                value={formData.position}
+                onChange={(e) => updateForm('position', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Length of Service *</label>
+              <input
+                type="text"
+                placeholder="e.g., 3 years"
+                value={formData.lengthOfService}
+                onChange={(e) => updateForm('lengthOfService', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Income (PHP) *</label>
+              <input
+                type="number"
+                value={formData.monthlyIncome}
+                onChange={(e) => updateForm('monthlyIncome', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Step 3 */}
+        {step === 3 && (
+          <div className="space-y-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Existing Accounts & Loans</h2>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Do you have existing accounts with Landbank?
+              </label>
+              <div className="flex gap-6">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    checked={formData.hasLandbankAccount === true}
+                    onChange={() => updateForm('hasLandbankAccount', true)}
+                    className="w-4 h-4"
+                  />
+                  Yes
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    checked={formData.hasLandbankAccount === false}
+                    onChange={() => updateForm('hasLandbankAccount', false)}
+                    className="w-4 h-4"
+                  />
+                  No
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Existing Loans with other banks?
+              </label>
+              <div className="flex gap-6">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    checked={formData.hasOtherBankLoan === true}
+                    onChange={() => updateForm('hasOtherBankLoan', true)}
+                    className="w-4 h-4"
+                  />
+                  Yes
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    checked={formData.hasOtherBankLoan === false}
+                    onChange={() => updateForm('hasOtherBankLoan', false)}
+                    className="w-4 h-4"
+                  />
+                  No
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Existing Loans with debt?
+              </label>
+              <div className="flex gap-6">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    checked={formData.hasDebt === true}
+                    onChange={() => updateForm('hasDebt', true)}
+                    className="w-4 h-4"
+                  />
+                  Yes
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    checked={formData.hasDebt === false}
+                    onChange={() => updateForm('hasDebt', false)}
+                    className="w-4 h-4"
+                  />
+                  No
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4 */}
+        {step === 4 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Reference</h2>
+
+            {/* Add Reference Form */}
+            <div className="border rounded-lg p-4 bg-gray-50">
+              <h3 className="font-medium text-gray-700 mb-3">Add Reference</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={newReference.name}
+                  onChange={(e) => setNewReference({ ...newReference, name: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  value={newReference.phone}
+                  onChange={(e) => setNewReference({ ...newReference, phone: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Relationship"
+                  value={newReference.relationship}
+                  onChange={(e) => setNewReference({ ...newReference, relationship: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={addReference}
+                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
+              >
+                + Add Reference
+              </button>
+            </div>
+
+            {/* References List */}
+            {formData.references.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-700">Added References:</h3>
+                {formData.references.map((ref, idx) => (
+                  <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
+                    <div>
+                      <span className="font-medium">{ref.name}</span>
+                      {ref.relationship && <span className="text-gray-500 text-sm ml-2">({ref.relationship})</span>}
+                      <p className="text-sm text-gray-500">{ref.phone}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeReference(idx)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Terms & Conditions */}
+            <div className="mt-6 pt-4 border-t">
+              <label className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.agreeToTerms}
+                  onChange={(e) => updateForm('agreeToTerms', e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span className="text-sm text-gray-700">
+                  I have reviewed the information provided and certify it to be true and correct. I accept the{' '}
+                  <a href="#" className="text-blue-600 hover:underline">
+                    Terms and Conditions
+                  </a>
+                  .
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between mt-8 pt-4 border-t">
+          {step > 1 && (
+            <button
+              type="button"
+              onClick={prevStep}
+              className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+            >
+              Previous
+            </button>
+          )}
+          {step < 4 ? (
+            <button
+              type="button"
+              onClick={nextStep}
+              disabled={!isStepValid()}
+              className={`px-6 py-2 rounded-lg transition ml-auto ${
+                isStepValid()
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={!formData.agreeToTerms}
+              className={`px-6 py-2 rounded-lg transition ml-auto ${
+                formData.agreeToTerms
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              Submit Application
+            </button>
+          )}
+        </div>
+      </form>
+    </div>
+  );
+}
